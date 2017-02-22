@@ -80,6 +80,7 @@
 
 (require 'cc-mode)
 (require 'pos-tip)
+(require 'helm)
 (eval-when-compile
   (require 'cc-langs)
   (require 'cc-fonts))
@@ -167,7 +168,7 @@
 ;; Don't put these in c-modifier-kwds because they can be used without a type
 ;; following them.
 (c-lang-defconst c-typeless-decl-kwds
-  dart '("abstract" "const" "factory" "final" "operator" "static" "typedef" "var"))
+  dart '("abstract" "const" "factory" "final" "operator" "static" "typedef" "var" "async"))
 
 (c-lang-defconst c-modifier-kwds
   dart nil)
@@ -182,7 +183,7 @@
   dart '("extends" "implements" "factory"))
 
 (c-lang-defconst c-type-list-kwds
-  dart '("new" "const" "is" "is!" "extends" "implements" "factory"))
+                 dart '("new" "const" "is" "is!" "extends" "implements" "factory" "=>" "." "==" "!="))
 
 (c-lang-defconst c-ref-list-kwds
   dart nil)
@@ -1439,8 +1440,7 @@ The buffer name is dart-hirerachy"
    ))))
 ;;; Initialization
 
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.dart\\'" . dart-mode))
+;;;###autoload (add-to-list 'auto-mode-alist '("\\.dart\\'" . dart-mode))
 
 ;;;###autoload
 (defun dart-mode ()
