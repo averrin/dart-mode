@@ -6,54 +6,6 @@
 ;; Package-Requires: ((cl-lib "0.5") (dash "2.10.0") (flycheck "0.23") (pos-tip "0.4.5""))
 ;; Keywords: language, dart
 
-;; Copyright (C) 2011 Google Inc.
-;;
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;; This file contains several functions and variables adapted from the
-;; code in https://github.com/dominikh/go-mode.el
-;;
-;; go-mode.el uses this license:
-;;
-;; Copyright (c) 2014 The go-mode Authors. All rights reserved.
-;;
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are
-;; met:
-;;
-;;    * Redistributions of source code must retain the above copyright
-;; notice, this list of conditions and the following disclaimer.
-;;    * Redistributions in binary form must reproduce the above
-;; copyright notice, this list of conditions and the following disclaimer
-;; in the documentation and/or other materials provided with the
-;; distribution.
-;;    * Neither the name of the copyright holder nor the names of its
-;; contributors may be used to endorse or promote products derived from
-;; this software without specific prior written permission.
-;;
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-;; A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-;; OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-;; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-;; LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 ;;; Commentary:
 
 ;; To install, see https://github.com/sid-kurias/dart-mode/README.md
@@ -70,25 +22,13 @@
 ;; * Methods using "=>" can cause indentation woes.
 ;; * C and C++ modes seem to be hosed.
 
-;; Definitions adapted from go-mode.el are
-;;
-;; gofmt-command gofmt-args gofmt-show-errors gofmt go--apply-rcs-patch
-;; gofmt--kill-error-buffer gofmt--process-errors gofmt-before-save
-;; go--goto-line go--delete-whole-line
-
 ;;; Code:
-(eval-when-compile
-  (and (= emacs-major-version 24)
-       (>= emacs-minor-version 4)
-       (require 'cl))
-  (require 'cc-langs)
-  (require 'cc-fonts))
-
-(require 'compile)
-(require 's)
 
 (require 'cc-mode)
 (require 'pos-tip)
+(eval-when-compile
+  (require 'cc-langs)
+  (require 'cc-fonts))
 
 (eval-and-compile (c-add-language 'dart-mode 'java-mode))
 
@@ -264,19 +204,19 @@
 
 ;; (c-add-style "dart" dart-c-style)
 
-;; ;; (defvar dart-mode-map (c-make-inherited-keymap)
-;; ;;   "Keymap used in dart-mode buffers.")
-;; ;; (define-key dart-mode-map (kbd "C-c ?") 'dart-show-hover)
-;; ;; (define-key dart-mode-map (kbd "C-c C-g") 'dart-goto)
-;; ;; (define-key dart-mode-map (kbd "C-c C-f") 'dart-find-refs)
-;; ;; (define-key dart-mode-map (kbd "C-c C-e") 'dart-find-member-decls)
-;; ;; (define-key dart-mode-map (kbd "C-c C-r") 'dart-find-member-refs)
-;; ;; (define-key dart-mode-map (kbd "C-c C-t") 'dart-find-top-level-decls)
-;; ;; (define-key dart-mode-map (kbd "C-c C-o") 'dart-format)
-;; ;; (define-key dart-mode-map (kbd "M-/") 'dart-expand)
-;; ;; (define-key dart-mode-map (kbd "M-?") 'dart-expand-parameters)
+;; (defvar dart-mode-map (c-make-inherited-keymap)
+;;   "Keymap used in dart-mode buffers.")
+;; (define-key dart-mode-map (kbd "C-c ?") 'dart-show-hover)
+;; (define-key dart-mode-map (kbd "C-c C-g") 'dart-goto)
+;; (define-key dart-mode-map (kbd "C-c C-f") 'dart-find-refs)
+;; (define-key dart-mode-map (kbd "C-c C-e") 'dart-find-member-decls)
+;; (define-key dart-mode-map (kbd "C-c C-r") 'dart-find-member-refs)
+;; (define-key dart-mode-map (kbd "C-c C-t") 'dart-find-top-level-decls)
+;; (define-key dart-mode-map (kbd "C-c C-o") 'dart-format)
+;; (define-key dart-mode-map (kbd "M-/") 'dart-expand)
+;; (define-key dart-mode-map (kbd "M-?") 'dart-expand-parameters)
 
-;; ;; ;;; CC indentation support
+;; ;;; CC indentation support
 
 ;; (defvar c-syntactic-context nil
 ;;   "A dynamically-bound variable used by cc-mode.")
@@ -513,7 +453,7 @@
 ;;   (setq dart-mode-syntax-table
 ;;         (funcall (c-lang-const c-make-mode-syntax-table dart))))
 
-;;; Dart analysis server
+;; ;;; Dart analysis server
 
 (cl-defstruct
     (dart--analysis-server
