@@ -231,35 +231,35 @@ Only set in `dart-popup-mode'.")
 
 ;;; General configuration
 
-(defcustom dart-sdk-path
-  ;; Use Platform.resolvedExecutable so that this logic works through symlinks
-  ;; and wrapper scripts.
-  (-when-let (dart (executable-find "dart"))
-    (dart--with-temp-file input
-      (with-temp-file input (insert "
-        import 'dart:io';
-        void main() {
-          print(Platform.resolvedExecutable);
-        }
-        "))
-      (-when-let (result (dart--try-process dart input))
-        (file-name-directory
-         (directory-file-name
-          (file-name-directory (string-trim result)))))))
-  "The absolute path to the root of the Dart SDK."
-  :group 'dart-mode
-  :type 'directory
-  :package-version '(dart-mode . "1.0.0"))
+;; (defcustom dart-sdk-path
+;;   ;; Use Platform.resolvedExecutable so that this logic works through symlinks
+;;   ;; and wrapper scripts.
+;;   (-when-let (dart (executable-find "dart"))
+;;     (dart--with-temp-file input
+;;       (with-temp-file input (insert "
+;;         import 'dart:io';
+;;         void main() {
+;;           print(Platform.resolvedExecutable);
+;;         }
+;;         "))
+;;       (-when-let (result (dart--try-process dart input))
+;;         (file-name-directory
+;;          (directory-file-name
+;;           (file-name-directory (string-trim result)))))))
+;;   "The absolute path to the root of the Dart SDK."
+;;   :group 'dart-mode
+;;   :type 'directory
+;;   :package-version '(dart-mode . "1.0.0"))
 
-(defun dart-executable-path ()
-  "The absolute path to the 'dart' executable.
-Returns nil if `dart-sdk-path' is nil."
-  (when dart-sdk-path
-    (concat dart-sdk-path
-            (file-name-as-directory "bin")
-            (if (memq system-type '(ms-dos windows-nt))
-                "dart.exe"
-              "dart"))))
+;; (defun dart-executable-path ()
+;;   "The absolute path to the 'dart' executable.
+;; Returns nil if `dart-sdk-path' is nil."
+;;   (when dart-sdk-path
+;;     (concat dart-sdk-path
+;;             (file-name-as-directory "bin")
+;;             (if (memq system-type '(ms-dos windows-nt))
+;;                 "dart.exe"
+;;               "dart"))))
 
 
 ;;; CC configuration
