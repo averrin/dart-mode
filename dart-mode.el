@@ -3,7 +3,7 @@
 ;; Author: Natalie Weizenbaum, Sidart Kurias
 ;; URL: https://github.com/sid-kurias/dart-mode
 ;; Version: 1.0.0
-;; Package-Requires: ((cl-lib "0.5") (dash "2.10.0") (flycheck "0.23") (pos-tip "0.4.5""))
+;; Package-Requires: ((cl-lib "0.5") (dash "2.10.0") (flycheck "0.23") (pos-tip "0.4.5"))
 ;; Keywords: language, dart
 
 ;; Copyright (C) 2011 Google Inc.
@@ -79,7 +79,7 @@
 ;;; Code:
 
 (require 'cc-mode)
-;; (require 'pos-tip)
+(require 'pos-tip)
 (eval-when-compile
   (require 'cc-langs)
   (require 'cc-fonts))
@@ -1508,13 +1508,13 @@ The buffer name is dart-hirerachy"
 	     (dart--superclasses hierarchy 0)))
       (dart--show-tree))))
 
-;; (defun dart--show-hover(response)
-;;   "Unpacks and shows dartdoc associated with the element."
-;;   (dart-info (format "Reporting hover : %s" response))
-;;   (let ((result (assoc 'result response)))
-;;     (-when-let* ((hovers (cdr (assoc 'hovers result)))
-;; 		 (doc (cdr (assoc 'dartdoc (aref hovers 0)))))
-;;       (pos-tip-show doc nil nil nil -1))))
+(defun dart--show-hover(response)
+  "Unpacks and shows dartdoc associated with the element."
+  (dart-info (format "Reporting hover : %s" response))
+  (let ((result (assoc 'result response)))
+    (-when-let* ((hovers (cdr (assoc 'hovers result)))
+		 (doc (cdr (assoc 'dartdoc (aref hovers 0)))))
+      (pos-tip-show doc nil nil nil -1))))
 
 (defun dart-type-hierarchy ()
   "Show type hierarchy for symbol at point"
@@ -1527,15 +1527,15 @@ The buffer name is dart-hirerachy"
    (lambda (response)
      (dart--show-hierachy response))))
 
-;; (defun dart-hover-information ()
-;;   "Show dartdoc for symbol at point"
-;;   (interactive)
-;;   (dart--analysis-server-send
-;;    "analysis.getHover"
-;;    `((file . ,(buffer-file-name))
-;;      (offset . ,(1- (point))))
-;;    (lambda (response)
-;;      (dart--show-hover response))))
+(defun dart-hover-information ()
+  "Show dartdoc for symbol at point"
+  (interactive)
+  (dart--analysis-server-send
+   "analysis.getHover"
+   `((file . ,(buffer-file-name))
+     (offset . ,(1- (point))))
+   (lambda (response)
+     (dart--show-hover response))))
 
 (defun dart-imenu-index ()
   "Callback invoked by imenu-create-index-function."
