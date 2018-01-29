@@ -2,8 +2,8 @@
 
 ;; Author: Natalie Weizenbaum, Sidart Kurias
 ;; URL: https://github.com/sid-kurias/dart-mode
-;; Version: 1.0.0
-;; Package-Requires: ((cl-lib "0.5") (dash "2.10.0") (flycheck "0.23") (pos-tip "0.4.5"))
+;; Version: 0.20
+;; Package-Requires: ((cl-lib "0.5") (dash "2.10.0") (flycheck "0.23") (pos-tip "0.4.5""))
 ;; Keywords: language, dart
 
 ;; Copyright (C) 2011 Google Inc.
@@ -90,177 +90,6 @@
 (require 'dash)
 (require 'flycheck)
 (require 'json)
-
-(defun dart-beginning-of-statement ()
-  "Moves to the beginning of a Dart statement.
-Unlike `c-beginning-of-statement', this handles maps correctly
-and will move to the top level of a bracketed statement."
-  (while
-      (progn
-        (back-to-indentation)
-        (while (eq (char-after) ?})
-          (forward-char)
-          (forward-sexp -1)
-          (back-to-indentation))
-        (when (not (dart--beginning-of-statement-p)) (forward-line -1)))))
-
-(defun dart--beginning-of-statement-p ()
-  "Returns whether the point is at the beginning of a statement.
-Statements are assumed to begin on their own lines. This returns
-true for positions before the start of the statement, but on its line."
-  (and
-   (save-excursion
-     (skip-syntax-forward " ")
-     (not (or (bolp) (eq (char-after) ?}))))
-   (save-excursion
-     (skip-syntax-backward " ")
-     (when (bolp)
-       (cl-loop do (forward-char -1)
-             while (looking-at "^ *$"))
-       (skip-syntax-backward " ")
-       (cl-case (char-before)
-         ((?} ?\;) t)
-         ((?{) (dart-in-block-p (c-guess-basic-syntax))))))))
-
-(defconst dart--identifier-re
-  "[a-zA-Z_$][a-zA-Z0-9_$]*"
-  "A regular expression that matches keywords.")
-
-(defun dart--forward-identifier ()
-  "Moves the point forward through a Dart identifier."
-  (when (looking-at dart--identifier-re)
-    (goto-char (match-end 0))))
-
-(defun dart--kill-buffer-and-window (buffer)
-  "Kills BUFFER, and its window if it has one.
-This is different than `kill-buffer' because, if the buffer has a
-window, it respects the `quit-restore' window parameter. See
-`quit-window' for details."
-  (-if-let (window (get-buffer-window buffer))
-      (quit-window t window)
-    (kill-buffer buffer)))
-
-(defun dart--get (alist &rest keys)
-  "Recursively calls `cdr' and `assoc' on ALIST with KEYS.
-Returns the value rather than the full alist cell."
-  (--reduce-from (cdr (assoc it acc)) alist keys))
-
-(defmacro dart--json-let (json fields &rest body)
-  "Assigns variables named FIELDS to the corresponding fields in JSON.
-FIELDS may be either identifiers or (ELISP-IDENTIFIER JSON-IDENTIFIER) pairs."
-  (declare (indent 2))
-  (let ((json-value (make-symbol "json")))
-    `(let ((,json-value ,json))
-       (let ,(--map (if (symbolp it)
-                        `(,it (dart--get ,json-value ',it))
-                      (-let [(variable key) it]
-                        `(,variable (dart--get ,json-value ',key))))
-                    fields)
-         ,@body))))
-
-(defun dart--property-string (text prop value)
-  "Returns a copy of TEXT with PROP set to VALUE.
-Converts TEXT to a string if it's not already."
-  (let ((copy (substring (format "%s" text) 0)))
-    (put-text-property 0 (length copy) prop value copy)
-    copy))
-
-(defun dart--face-string (text face)
-  "Returns a copy of TEXT with its font face set to FACE.
-Converts TEXT to a string if it's not already."
-  (dart--property-string text 'face face))
-
-(defmacro dart--fontify-excursion (face &rest body)
-  "Applies FACE to the region moved over by BODY."
-  (declare (indent 1))
-  (-let [start (make-symbol "start")]
-    `(-let [,start (point)]
-       ,@body
-       (put-text-property ,start (point) 'face ,face))))
-
-(defun dart--flash-highlight (offset length)
-  "Briefly highlights the text defined by OFFSET and LENGTH.
-OFFSET and LENGTH are expected to come from the analysis server,
-rather than Elisp."
-  (-let [overlay (make-overlay (+ 1 offset) (+ 1 offset length))]
-    (overlay-put overlay 'face 'highlight)
-    (run-at-time "1 sec" nil (lambda () (delete-overlay overlay)))))
-
-(defun dart--read-file (filename)
-  "Returns the contents of FILENAME."
-  (with-temp-buffer
-    (insert-file-contents filename)
-    (buffer-string)))
-
-(defmacro dart--with-temp-file (name-variable &rest body)
-  "Creates a temporary file for the duration of BODY.
-Assigns the filename to NAME-VARIABLE. Doesn't change the current buffer.
-Returns the value of the last form in BODY."
-  (declare (indent 1))
-  `(-let [,name-variable (make-temp-file "dart-mode.")]
-     (unwind-protect
-         (progn ,@body)
-       (delete-file ,name-variable))))
-
-(defun dart--run-process (executable &rest args)
-  "Runs EXECUTABLE with ARGS synchronously.
-Returns (STDOUT STDERR EXIT-CODE)."
-  (dart--with-temp-file stderr-file
-    (with-temp-buffer
-      (-let [exit-code
-             (apply #'call-process
-                    executable nil (list t stderr-file) nil args)]
-        (list
-         (buffer-string)
-         (dart--read-file stderr-file)
-         exit-code)))))
-
-(defun dart--try-process (executable &rest args)
-  "Like `dart--run-process', but only returns stdout.
-Any stderr is logged using dart-log. Returns nil if the exit code is non-0."
-  (-let [result (apply #'dart--run-process executable args)]
-    (unless (string-empty-p (nth 1 result))
-      (dart-log (format "Error running %S:\n%s" (cons executable args) (nth 1 result))))
-    (if (eq (nth 2 result) 0) (nth 0 result))))
-
-(defvar dart--do-it-again-callback nil
-  "A callback to call when `dart-do-it-again' is invoked.
-Only set in `dart-popup-mode'.")
-(make-variable-buffer-local 'dart--do-it-again-callback)
-
-
-;;; General configuration
-
-;; (defcustom dart-sdk-path
-;;   ;; Use Platform.resolvedExecutable so that this logic works through symlinks
-;;   ;; and wrapper scripts.
-;;   (-when-let (dart (executable-find "dart"))
-;;     (dart--with-temp-file input
-;;       (with-temp-file input (insert "
-;;         import 'dart:io';
-;;         void main() {
-;;           print(Platform.resolvedExecutable);
-;;         }
-;;         "))
-;;       (-when-let (result (dart--try-process dart input))
-;;         (file-name-directory
-;;          (directory-file-name
-;;           (file-name-directory (string-trim result)))))))
-;;   "The absolute path to the root of the Dart SDK."
-;;   :group 'dart-mode
-;;   :type 'directory
-;;   :package-version '(dart-mode . "1.0.0"))
-
-;; (defun dart-executable-path ()
-;;   "The absolute path to the 'dart' executable.
-;; Returns nil if `dart-sdk-path' is nil."
-;;   (when dart-sdk-path
-;;     (concat dart-sdk-path
-;;             (file-name-as-directory "bin")
-;;             (if (memq system-type '(ms-dos windows-nt))
-;;                 "dart.exe"
-;;               "dart"))))
-
 
 ;;; CC configuration
 
@@ -704,7 +533,7 @@ The Dart analysis server adds support for error checking, code completion,
 navigation, and more."
   :group 'dart-mode
   :type 'boolean
-  :package-version '(dart-mode . "1.0.0"))
+  :package-version '(dart-mode . "0.20"))
 
 (defvar dart--analysis-server nil
   "The instance of the Dart analysis server we are communicating with.")
@@ -728,7 +557,7 @@ buffers, even if the buffers have not changed.")
   "The absolute path to the 'dart' executable."
   :group 'dart-mode
   :type 'file
-  :package-version '(dart-mode . "1.0.0"))
+  :package-version '(dart-mode . "0.20"))
 
 (defvar dart--imenu-candidates nil
   "Store formatted imenu candidates")
@@ -742,7 +571,7 @@ buffers, even if the buffers have not changed.")
   "The absolute path to the snapshot file that runs the Dart analysis server."
   :group 'dart-mode
   :type 'file
-  :package-version '(dart-mode . "1.0.0"))
+  :package-version '(dart-mode . "0.20"))
 
 (defvar dart-analysis-roots nil
   "The list of analysis roots that are known to the analysis server.
