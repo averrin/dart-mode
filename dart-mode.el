@@ -77,12 +77,18 @@
 ;; go--goto-line go--delete-whole-line
 
 ;;; Code:
+(eval-when-compile
+  (and (= emacs-major-version 24)
+       (>= emacs-minor-version 4)
+       (require 'cl))
+  (require 'cc-langs)
+  (require 'cc-fonts))
+
+(require 'compile)
+(require 's)
 
 (require 'cc-mode)
 (require 'pos-tip)
-(eval-when-compile
-  (require 'cc-langs)
-  (require 'cc-fonts))
 
 (eval-and-compile (c-add-language 'dart-mode 'java-mode))
 
