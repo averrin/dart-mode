@@ -204,18 +204,6 @@
 
 (c-add-style "dart" dart-c-style)
 
-(defvar dart-mode-map (c-make-inherited-keymap)
-  "Keymap used in dart-mode buffers.")
-(define-key dart-mode-map (kbd "C-c ?") 'dart-show-hover)
-(define-key dart-mode-map (kbd "C-c C-g") 'dart-goto)
-(define-key dart-mode-map (kbd "C-c C-f") 'dart-find-refs)
-(define-key dart-mode-map (kbd "C-c C-e") 'dart-find-member-decls)
-(define-key dart-mode-map (kbd "C-c C-r") 'dart-find-member-refs)
-(define-key dart-mode-map (kbd "C-c C-t") 'dart-find-top-level-decls)
-(define-key dart-mode-map (kbd "C-c C-o") 'dart-format)
-(define-key dart-mode-map (kbd "M-/") 'dart-expand)
-(define-key dart-mode-map (kbd "M-?") 'dart-expand-parameters)
-
 ;;; CC indentation support
 
 (defvar c-syntactic-context nil
@@ -424,6 +412,10 @@ whichever comes first."
             t)
         (looking-at "\\<\\>")))))
 
+(defun dart--goto-line (line)
+  "Move to the specified line."
+  (goto-char (point-min))
+  (forward-line (1- line)))
 
 ;;; Boilerplate font-lock piping
 
