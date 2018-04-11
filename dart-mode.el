@@ -204,6 +204,9 @@
 
 (c-add-style "dart" dart-c-style)
 
+(defvar dart-mode-map (c-make-inherited-keymap)
+  "Keymap used in dart-mode buffers.")
+
 ;;; CC indentation support
 
 (defvar c-syntactic-context nil
