@@ -34,8 +34,6 @@
 
 (require 'cl-lib)
 (require 'dash)
-(require 'flycheck)
-(require 'json)
 
 ;;; CC configuration
 
@@ -184,6 +182,11 @@
 
 (c-lang-defconst c-opt-postfix-decl-spec-kwds
   dart '("native"))
+
+(c-lang-defconst c-before-font-lock-functions
+  dart '(c-depropertize-new-text
+         c-restore-<>-properties
+         c-change-expand-fl-region))
 
 (push '(dart-brace-list-cont-nonempty . 0)
       (get 'c-offsets-alist 'c-stylevar-fallback))
